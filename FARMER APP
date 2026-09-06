@@ -1,1 +1,690 @@
-KisanMarket – A Direct Farmer-Buyer Marketplace web application featuring AI market price prediction, direct crop listing, buyer discovery, and live order tracking. 🌾📦
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Direct Farmer-Buyer Marketplace</title>
+    <style>
+        :root {
+            --primary: #2E7D32; /* Agricultural Green */
+            --primary-light: #4CAF50;
+            --secondary: #FF9800; /* Action Orange */
+            --bg-color: #F5F7FA;
+            --text-dark: #333333;
+            --text-light: #777777;
+            --white: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Mobile Container Simulation */
+        .app-container {
+            width: 100%;
+            max-width: 414px; /* iPhone Max width */
+            height: 100vh;
+            max-height: 896px;
+            background-color: var(--bg-color);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        @media (min-width: 415px) {
+            .app-container {
+                height: 90vh;
+                border-radius: 20px;
+            }
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .header-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .mic-btn {
+            background-color: var(--secondary);
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Screens - Fix applied for scroll & height */
+        .screen {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 20px;
+            padding-bottom: 120px; /* Extra bottom space to allow full scrolling */
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Typography & Components - Line height fix for text cutting */
+        h1, h2, h3 { 
+            color: var(--text-dark); 
+            margin-bottom: 10px; 
+            line-height: 1.3;
+        }
+        
+        .section-title {
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        p { color: var(--text-light); line-height: 1.5; margin-bottom: 15px; }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:active { background-color: #1b5e20; }
+        .btn.outline { background-color: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        
+        /* Auth Buttons */
+        .btn-google {
+            background: #ffffff;
+            border: 1px solid #dadce0;
+            color: #3c4043;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 15px 0;
+            color: #888;
+            font-size: 0.85rem;
+            position: relative;
+        }
+
+        .divider::before, .divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background-color: #ccc;
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        /* Specific UI Elements */
+        .ai-box {
+            background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+            border-left: 5px solid #009688;
+        }
+
+        .ai-box h3 { color: #00796b; display: flex; align-items: center; gap: 8px; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; color: var(--text-dark); }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem;
+        }
+
+        .grid-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .menu-item {
+            background: var(--white);
+            padding: 25px 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            cursor: pointer;
+            border: 1px solid #eee;
+            transition: transform 0.1s;
+        }
+
+        .menu-item:active { transform: scale(0.95); }
+        .menu-icon { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+        .menu-text { font-weight: 600; color: var(--text-dark); font-size: 0.95rem; }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: var(--white);
+            display: flex;
+            border-top: 1px solid #e0e0e0;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .nav-item.active { color: var(--primary); font-weight: bold; }
+        .nav-item span { display: block; font-size: 1.5rem; margin-bottom: 3px; }
+
+        /* Value Shift Bar Chart */
+        .bar-chart { margin-top: 20px; }
+        .bar-row { display: flex; align-items: center; margin-bottom: 10px; }
+        .bar-label { width: 40%; font-size: 0.8rem; font-weight: bold; }
+        .bar-track { width: 60%; background: #e0e0e0; height: 20px; border-radius: 10px; overflow: hidden; }
+        .bar-fill { height: 100%; display: flex; align-items: center; padding-left: 5px; color: white; font-size: 0.75rem; font-weight: bold; }
+        .bg-red { background: #f44336; width: 40%; }
+        .bg-green { background: var(--primary); width: 85%; }
+        
+        .buyer-card { border-left: 4px solid var(--secondary); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <!-- Top Header -->
+    <div class="header" id="appHeader" style="display:none;">
+        <div class="header-title">KisanMarket</div>
+        <div class="header-icons">
+            <button class="icon-btn" onclick="toggleLanguage()">🌐 A/अ</button>
+            <button class="icon-btn mic-btn" onclick="startVoiceAssistance()">🎤</button>
+        </div>
+    </div>
+
+    <!-- Screen 0: Onboarding / Problem Statement -->
+    <div id="screen-onboarding" class="screen active">
+        <div style="text-align: center; margin-bottom: 30px; margin-top: 10px;">
+            <h1 style="color: var(--primary); font-size: 2rem;">Direct Farmer-Buyer<br>Marketplace</h1>
+            <p>Empowering farmers with fair realization.</p>
+        </div>
+        
+        <div class="card">
+            <h3 style="color: #d32f2f;">The Value Gap Problem</h3>
+            <ul style="padding-left: 20px; font-size: 0.9rem; color: #555;">
+                <li>Intermediary Margins</li>
+                <li>High Transportation Costs</li>
+                <li>Mandi/Commission Charges</li>
+                <li>Storage & Wastage</li>
+            </ul>
+        </div>
+        
+        <div class="card" style="border-left: 4px solid var(--primary);">
+            <h3 style="color: var(--primary);">Our Solution</h3>
+            <p style="font-size: 0.9rem;">Connect directly with buyers. Eliminate up to 4 layers of middlemen.</p>
+            <div class="bar-chart">
+                <div class="bar-row">
+                    <div class="bar-label">Traditional Model</div>
+                    <div class="bar-track"><div class="bar-fill bg-red">40% Share</div></div>
+                </div>
+                <div class="bar-row">
+                    <div class="bar-label">App Marketplace</div>
+                    <div class="bar-track"><div class="bar-fill bg-green">85% Share</div></div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 25px;">
+            <button class="btn" onclick="navigate('screen-login')">Get Started</button>
+        </div>
+    </div>
+
+    <!-- Screen 1: Login (Gmail & Phone OTP) -->
+    <div id="screen-login" class="screen">
+        <h2 class="section-title">Farmer Login</h2>
+        <p>Login using your Google Account or Mobile OTP.</p>
+
+        <!-- Gmail Authentication -->
+        <button class="btn btn-google" onclick="loginWithGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google">
+            Sign in with Google
+        </button>
+
+        <div class="divider">OR</div>
+
+        <!-- Phone Number OTP Authentication -->
+        <div class="form-group">
+            <label>Mobile Number</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" value="+91" disabled style="width: 60px; text-align: center;">
+                <input type="tel" id="mobileNumber" maxlength="10" placeholder="Enter 10-digit number ">
+            </div>
+        </div>
+        
+        <div id="recaptcha-container"></div>
+        <button class="btn" id="sendOtpBtn" onclick="sendOTP()">Send OTP</button>
+        
+        <div id="otp-section" style="display: none;">
+            <div class="form-group">
+                <label>Enter 6-digit OTP</label>
+                <input type="text" id="otpInput" maxlength="6" placeholder="XXXXXX">
+            </div>
+            <button class="btn" onclick="verifyOTP()">Verify & Login</button>
+        </div>
+    </div>
+
+    <!-- Screen 2: Home Dashboard -->
+    <div id="screen-home" class="screen">
+        <h2>Welcome, <span id="userNameDisplay">Ramesh</span> 🌾</h2>
+        <p>What would you like to do today?</p>
+        
+        <div class="card ai-box" onclick="navigate('screen-market')">
+            <h3>🤖 AI Market Insights</h3>
+            <p style="margin: 0; font-size: 0.9rem;">Tomato prices are rising in your region! Current fair price: ₹45-50/kg. Tap to view.</p>
+        </div>
+        
+        <div class="grid-menu">
+            <div class="menu-item" onclick="navigate('screen-sell')">
+                <span class="menu-icon">📦</span>
+                <span class="menu-text">Sell Produce</span>
+            </div>
+            <div class="menu-item" onclick="navigate('screen-market')">
+                <span class="menu-icon">📈</span>
+                <span class="menu-text">Market Rate</span>
+            </div>
+            <div class="menu-item" onclick="navigate('screen-buyers')">
+                <span class="menu-icon">🤝</span>
+                <span class="menu-text">Find Buyer</span>
+            </div>
+            <div class="menu-item" onclick="navigate('screen-orders')">
+                <span class="menu-icon">🚚</span>
+                <span class="menu-text">My Orders</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 3: Sell Produce (Add/Upload) -->
+    <div id="screen-sell" class="screen">
+        <h2>Add Produce Details</h2>
+        <p>List your crop to connect with buyers.</p>
+        
+        <div class="card">
+            <div class="form-group">
+                <label>Crop Name</label>
+                <select id="cropSelect" onchange="updateCropEstimate()">
+                    <option value="Tomatoes (Desi)">Tomatoes (Desi)</option>
+                    <option value="Onions">Onions</option>
+                    <option value="Wheat">Wheat</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Quantity Available (kg)</label>
+                <input type="number" placeholder="e.g. 500">
+            </div>
+            <div class="form-group">
+                <label>Location</label>
+                <input type="text" value="Pune, Maharashtra" readonly>
+            </div>
+            <div class="form-group">
+                <label>Quality / Photo Upload</label>
+                <button class="btn outline" style="padding: 10px; margin-bottom: 0;" onclick="alert('Camera opened for photo capture')">📷 Tap to capture photo</button>
+            </div>
+        </div>
+        
+        <button class="btn" onclick="calculateFairPrice()">Analyze Fair Price</button>
+    </div>
+
+    <!-- Screen 4: Market Price Dashboard & AI Prediction -->
+    <div id="screen-market" class="screen">
+        <h2>Market Dashboard</h2>
+        
+        <div class="card ai-box" id="ai-prediction-box" style="display:block;">
+            <h3>✨ AI Fair Price Prediction</h3>
+            <p style="font-size: 0.85rem; margin-bottom: 10px;">Based on current mandi rates, historical data, and localized demand.</p>
+            <div id="aiPriceOutput" style="font-size: 2rem; font-weight: bold; color: #00796b; text-align: center;">₹45 - ₹50 / kg</div>
+            <p style="text-align: center; margin-top: 5px; font-size: 0.8rem;">Suggested Selling Price</p>
+        </div>
+        
+        <div class="card">
+            <h3 style="font-size: 1rem; border-bottom: 1px solid #eee; padding-bottom: 10px;">Current Market Rates</h3>
+            <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                <div>
+                    <span style="font-size: 0.8rem; color: #777;">Wholesale (Mandi)</span>
+                    <div style="font-size: 1.2rem; font-weight: bold;">₹30/kg</div>
+                </div>
+                <div>
+                    <span style="font-size: 0.8rem; color: #777;">Retail Price</span>
+                    <div style="font-size: 1.2rem; font-weight: bold;">₹70/kg</div>
+                </div>
+            </div>
+            <div style="background: #ffebee; color: #c62828; padding: 8px; border-radius: 5px; font-size: 0.8rem; margin-top: 15px; text-align: center; font-weight: bold;">
+                Price Gap: ₹40/kg lost to intermediaries
+            </div>
+        </div>
+        
+        <button class="btn" onclick="navigate('screen-buyers')">Find Direct Buyers at ₹45/kg</button>
+    </div>
+
+    <!-- Screen 5: Find Buyer -->
+    <div id="screen-buyers" class="screen">
+        <h2>Nearby Buyers</h2>
+        <p>Direct buyers looking for your produce.</p>
+        
+        <div class="card buyer-card">
+            <div style="display: flex; justify-content: space-between;">
+                <h3 style="margin: 0;">FreshMart Retailers</h3>
+                <span style="background: #e8f5e9; color: var(--primary); padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;">Verified</span>
+            </div>
+            <p style="font-size: 0.85rem; margin-top: 5px;">📍 12 km away</p>
+            <div style="display: flex; justify-content: space-between; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                <div><small>Required</small><br><strong>300 kg</strong></div>
+                <div><small>Offered Price</small><br><strong style="color: var(--primary);">₹48/kg</strong></div>
+            </div>
+            <button class="btn" style="padding: 10px; margin-bottom: 0;" onclick="confirmOrder()">Connect & Sell</button>
+        </div>
+
+        <div class="card buyer-card">
+            <div style="display: flex; justify-content: space-between;">
+                <h3 style="margin: 0;">City Restaurants Hub</h3>
+            </div>
+            <p style="font-size: 0.85rem; margin-top: 5px;">📍 18 km away</p>
+            <div style="display: flex; justify-content: space-between; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+                <div><small>Required</small><br><strong>150 kg</strong></div>
+                <div><small>Offered Price</small><br><strong style="color: var(--primary);">₹46/kg</strong></div>
+            </div>
+            <button class="btn outline" style="padding: 10px; margin-bottom: 0;" onclick="confirmOrder()">Connect & Sell</button>
+        </div>
+    </div>
+
+    <!-- Screen 6: Orders & Delivery -->
+    <div id="screen-orders" class="screen">
+        <h2>Order Tracking</h2>
+        
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+                <strong>Order #ORD-8821</strong>
+                <span style="color: var(--secondary); font-weight: bold;">In Transit</span>
+            </div>
+            <p style="margin-bottom: 5px;"><strong>Buyer:</strong> FreshMart Retailers</p>
+            <p style="margin-bottom: 5px;"><strong>Produce:</strong> 300 kg Tomatoes</p>
+            <p style="margin-bottom: 15px;"><strong>Total Value:</strong> ₹14,400</p>
+            
+            <div style="border-left: 2px solid var(--primary); padding-left: 15px; margin-left: 10px;">
+                <div style="position: relative; margin-bottom: 15px;">
+                    <div style="position: absolute; left: -21px; top: 0; width: 10px; height: 10px; background: var(--primary); border-radius: 50%;"></div>
+                    <small>10:00 AM</small><br><strong>Order Confirmed</strong>
+                </div>
+                <div style="position: relative; margin-bottom: 15px;">
+                    <div style="position: absolute; left: -21px; top: 0; width: 10px; height: 10px; background: var(--primary); border-radius: 50%;"></div>
+                    <small>01:30 PM</small><br><strong>Logistics Arranged (Pickup)</strong>
+                </div>
+                <div style="position: relative;">
+                    <div style="position: absolute; left: -21px; top: 0; width: 10px; height: 10px; background: var(--secondary); border-radius: 50%; box-shadow: 0 0 0 3px rgba(255,152,0,0.3);"></div>
+                    <small>Live Tracking</small><br><strong>En route to destination</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav" id="appFooter" style="display:none;">
+        <div class="nav-item active" onclick="navigate('screen-home', this)">
+            <span>🏠</span>Home
+        </div>
+        <div class="nav-item" onclick="navigate('screen-market', this)">
+            <span>📈</span>Rates
+        </div>
+        <div class="nav-item" onclick="navigate('screen-buyers', this)">
+            <span>🤝</span>Connect
+        </div>
+        <div class="nav-item" onclick="navigate('screen-orders', this)">
+            <span>🚚</span>Orders
+        </div>
+    </div>
+
+</div>
+
+<!-- Firebase Modular SDK v10 -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check.js";
+
+  // REPLACE WITH YOUR FIREBASE PROJECT CONFIG
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const googleProvider = new GoogleAuthProvider();
+
+  // Optional: App Check Security Integration
+  try {
+    initializeAppCheck(app, {
+      provider: new ReCaptchaV3Provider('YOUR_RECAPTCHA_SITE_KEY'),
+      isTokenAutoRefreshEnabled: true
+    });
+  } catch (e) {
+    console.log("App Check initialization skipped");
+  }
+
+  window.auth = auth;
+  window.googleProvider = googleProvider;
+  window.signInWithPopup = signInWithPopup;
+  window.RecaptchaVerifier = RecaptchaVerifier;
+  window.signInWithPhoneNumber = signInWithPhoneNumber;
+</script>
+
+<script>
+    function navigate(screenId, navElement = null) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        
+        if(navElement) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            navElement.classList.add('active');
+        } else {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const navItems = document.querySelectorAll('.nav-item');
+            if(screenId === 'screen-home') navItems[0].classList.add('active');
+            if(screenId === 'screen-market') navItems[1].classList.add('active');
+            if(screenId === 'screen-buyers') navItems[2].classList.add('active');
+            if(screenId === 'screen-orders') navItems[3].classList.add('active');
+        }
+        document.getElementById(screenId).scrollTop = 0;
+    }
+
+    function login(userName = "Ramesh") {
+        document.getElementById('userNameDisplay').innerText = userName;
+        document.getElementById('appHeader').style.display = 'flex';
+        document.getElementById('appFooter').style.display = 'flex';
+        navigate('screen-home');
+    }
+
+    // Google Sign-In Function
+    function loginWithGoogle() {
+        if (!window.auth) {
+            alert("Testing Mode: Directing to Dashboard.");
+            login("Google User");
+            return;
+        }
+
+        window.signInWithPopup(window.auth, window.googleProvider)
+            .then((result) => {
+                alert("Welcome " + result.user.displayName + "!");
+                login(result.user.displayName.split(" ")[0]);
+            })
+            .catch((error) => {
+                console.error("Google Auth Error:", error);
+                alert("Google Sign-In failed or cancelled.");
+            });
+    }
+
+    // Phone OTP Auth Functions
+    let recaptchaVerifier = null;
+
+    function initRecaptcha() {
+        if (!recaptchaVerifier && window.auth) {
+            window.recaptchaVerifier = new window.RecaptchaVerifier(window.auth, 'recaptcha-container', {
+                'size': 'invisible'
+            });
+        }
+    }
+
+    function sendOTP() {
+        const phone = document.getElementById('mobileNumber').value;
+        if (phone.length !== 10) {
+            alert("Please enter a valid 10-digit mobile number!");
+            return;
+        }
+
+        if (!window.auth) {
+            alert("Testing Mode: Demo OTP sent (123456)");
+            document.getElementById('otp-section').style.display = 'block';
+            document.getElementById('sendOtpBtn').style.display = 'none';
+            return;
+        }
+
+        initRecaptcha();
+        const phoneNumber = "+91" + phone;
+
+        window.signInWithPhoneNumber(window.auth, phoneNumber, window.recaptchaVerifier)
+            .then((confirmationResult) => {
+                window.confirmationResult = confirmationResult;
+                alert("OTP sent to " + phoneNumber);
+                document.getElementById('otp-section').style.display = 'block';
+                document.getElementById('sendOtpBtn').style.display = 'none';
+            })
+            .catch((error) => {
+                console.error("SMS Error:", error);
+                alert("Failed to send OTP. Please check Firebase config.");
+            });
+    }
+
+    function verifyOTP() {
+        const otp = document.getElementById('otpInput').value;
+        if (window.confirmationResult) {
+            window.confirmationResult.confirm(otp)
+                .then((result) => {
+                    alert("Mobile Verified Successfully!");
+                    login("Kisan User");
+                })
+                .catch(() => alert("Invalid OTP entered!"));
+        } else if (otp === "123456") {
+            alert("Testing OTP Verified!");
+            login("Kisan User");
+        } else {
+            alert("Invalid OTP! Try 123456 in test mode.");
+        }
+    }
+
+    // Accessibility Utilities
+    function startVoiceAssistance() {
+        if ('speechSynthesis' in window) {
+            const msg = new SpeechSynthesisUtterance("Kisan Market app mein aapka swagat hai. Apna vikalp chune.");
+            msg.lang = 'hi-IN';
+            window.speechSynthesis.speak(msg);
+        } else {
+            alert("Voice assistance activated.");
+        }
+    }
+
+    function toggleLanguage() {
+        alert("Language switched to Hindi / Bhasha badli gayi.");
+    }
+
+    function updateCropEstimate() {
+        const crop = document.getElementById('cropSelect').value;
+        const output = document.getElementById('aiPriceOutput');
+        if(crop.includes("Tomatoes")) output.innerText = "₹45 - ₹50 / kg";
+        else if(crop.includes("Onions")) output.innerText = "₹28 - ₹32 / kg";
+        else if(crop.includes("Wheat")) output.innerText = "₹24 - ₹27 / kg";
+    }
+
+    function calculateFairPrice() {
+        navigate('screen-market');
+    }
+
+    function confirmOrder() {
+        alert("Order Confirmed! Logistics will arrive for pickup today.");
+        navigate('screen-orders');
+    }
+</script>
+
+</body>
+</html>
